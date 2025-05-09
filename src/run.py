@@ -4,11 +4,6 @@ from src.app.config import Config
 from src.app.extensions import db
 from src.app.model.user import*
 
-
-import logging
-
-logging.basicConfig(level=logging.DEBUG) 
-
 app = create_app()
 
 if __name__ == '__main__':
