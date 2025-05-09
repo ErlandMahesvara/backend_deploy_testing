@@ -1,6 +1,8 @@
 from decimal import Decimal
 from datetime import datetime
-
+import logging
+from decimal import Decimal, ROUND_HALF_UP # For accurate averaging
+from sqlalchemy import func
 from .extensions import db
 from .model.country import Country
 from .model.state import State
@@ -17,6 +19,36 @@ from .model.rating import Rating
 
 # Utility for password hashing if not handled by model's @password.setter
 # from .utils.security import hash_password # User model handles this
+
+logger = logging.getLogger(__name__)
+
+def _update_book_average_rating(book_id):
+        """Helper function to recalculate and update the average rating for a book."""
+        try:
+            book = Book.query.get(book_id)
+            if not book:
+                logger.warning(f"Attempted to update rating for non-existent book ID: {book_id}")
+                return # Or raise an error if this case shouldn't happen
+
+            # Calculate the average score using SQLAlchemy's avg function
+            # Coalesce ensures we get 0 if there are no ratings, preventing None
+            avg_score_result = db.session.query(
+                func.coalesce(func.avg(Rating.score), 0)
+            ).filter(Rating.book_id == book_id).scalar()
+
+            # Convert to Decimal for precise rounding (e.g., to 2 decimal places)
+            avg_score_decimal = Decimal(str(avg_score_result))
+            # Round to 2 decimal places (adjust precision as needed)
+            rounded_avg_score = avg_score_decimal.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+            book.rating = rounded_avg_score # Update the book's rating field
+            # Commit is handled by the calling function (create, update, delete)
+            logger.info(f"Updated average rating for Book ID {book_id} to {book.rating}")
+        except Exception as e:
+            # Log the error but don't let it break the main operation if possible
+            logger.error(f"Error updating average rating for Book ID {book_id}: {e}", exc_info=True)
+            # Depending on requirements, you might want to re-raise or handle differently
+            # db.session.rollback() # Rollback if the update itself fails critically
 
 def seed_geographical_data():
     """Seeds countries, states, and cities."""
@@ -724,7 +756,19 @@ def seed_all():
     db.session.commit()
 
     seed_ratings()
-    db.session.commit()
+    db.session.commit() # Ratings are now in the DB
+
+    # --- NEWLY ADDED SECTION ---
+    print("Updating average book ratings...")
+    all_books = Book.query.all() # Make sure Book is imported
+    if not all_books:
+        print("No books found to update ratings for.")
+    else:
+        for book_item in all_books: # Using book_item to avoid potential conflict
+            _update_book_average_rating(book_item.id) # Call the existing helper function
+        db.session.commit() # Commit the updated book ratings
+        print("Average book ratings updated.")
+    # --- END OF NEWLY ADDED SECTION ---
 
     print("Database seeding process completed successfully!")
 

@@ -168,7 +168,7 @@ wheels = [
 ]
 
 [[package]]
-name = "final-project-backend"
+name = "backend_deploy_testing"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

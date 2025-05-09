@@ -6,6 +6,7 @@ from .book_category_table import book_category_table
 from .publisher import Publisher
 from .rating import Rating
 from .blacklist_token import BlacklistToken
+from .transaction import Transaction
 
 __all__ = [
     'Book',
@@ -15,5 +16,6 @@ __all__ = [
     'book_category_table',
     'Publisher',
     'Rating',
-    'BlacklistToken'
+    'BlacklistToken',
+    'Transaction'
 ]
