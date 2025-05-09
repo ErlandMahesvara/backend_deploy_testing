@@ -16,7 +16,6 @@ import os
 def create_app():
     config_name = os.getenv('FLASK_ENV', 'prod')
     app = Flask(__name__)
-    logging.basicConfig(level=logging.INFO) # Configure logging to show INFO level messages
     print("--- Config Name:", config_name) # Debug
     print("--- Keys in config_by_name:", config_by_name.keys())
     app.config.from_object(config_by_name[config_name])
