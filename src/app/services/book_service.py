@@ -160,7 +160,7 @@ class BookService:
                             min_price: float = None,
                             max_price: float = None):
         page = args.get('page', 1, type=int)
-        per_page = args.get('per_page', 12, type=int)
+        per_page = args.get('per_page', 10, type=int)
         search_term = args.get('search') # For book title
         user_id_filter = args.get('user_id', type=int) # Kept for get_books_by_user compatibility
         sort_by = args.get('sort_by', 'created_at')
